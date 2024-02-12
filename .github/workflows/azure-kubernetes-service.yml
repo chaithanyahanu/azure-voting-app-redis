@@ -1,33 +1,17 @@
 name: build_deploy_aks
 
 on:
-  push:
-    paths:
-      - "azure-vote/**"
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
       environment:
-        description: 'Environment to run tests against'
-        type: environment
+        description: 'Environment to deploy to'
         required: true
+        type: string
+        default: 'Dev' # Default to Dev environment if not specified
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: Dev
     steps:
       - name: Checkout source code 
         uses: actions/checkout@v3
@@ -67,6 +51,9 @@ jobs:
              azure-vote-all-in-one-redis.yaml
           images: '${{ secrets.registry }}.azurecr.io/${{ secrets.repository }}/azure-vote-front:${{ github.sha }}'
           pull-images: false
+
+  
+
 
   prod_deploy:
     runs-on: ubuntu-latest
