@@ -1,4 +1,5 @@
 name: build_deploy_aks
+
 on:
   push:
     paths:
@@ -22,6 +23,7 @@ on:
         description: 'Environment to run tests against'
         type: environment
         required: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -66,7 +68,7 @@ jobs:
           images: '${{ secrets.registry }}.azurecr.io/${{ secrets.repository }}/azure-vote-front:${{ github.sha }}'
           pull-images: false
 
-   build:
+  prod_deploy:
     runs-on: ubuntu-latest
     environment: Prod
     steps:
@@ -107,4 +109,4 @@ jobs:
           manifests: |
              azure-vote-all-in-one-redis.yaml
           images: '${{ secrets.registry }}.azurecr.io/${{ secrets.repository }}/azure-vote-front:${{ github.sha }}'
-          pull-images: false            
+          pull-images: false
