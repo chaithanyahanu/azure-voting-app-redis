@@ -12,8 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.inputs.environment != 'prod'
     steps:
+      - name: Set environment variable
+        run: echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
       - name: Checkout source code 
         uses: actions/checkout@v3
       - name: ACR build
@@ -43,8 +44,9 @@ jobs:
       - name: Setup kubectl
         id: install-kubectl
         uses: azure/setup-kubectl@v3
-      - name: Deploy to AKS
-        id: deploy-aks
+      - name: Deploy to AKS (Dev)
+        id: deploy-aks-dev
+        if: env.ENVIRONMENT == 'Dev'
         uses: Azure/k8s-deploy@v4
         with:
           namespace: 'default'
@@ -52,43 +54,9 @@ jobs:
              azure-vote-all-in-one-redis.yaml
           images: '${{ secrets.registry }}.azurecr.io/${{ secrets.repository }}/azure-vote-front:${{ github.sha }}'
           pull-images: false
-
-  prod_deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event.inputs.environment == 'prod'
-    steps:
-      - name: Checkout source code 
-        uses: actions/checkout@v3
-      - name: ACR build
-        id: build-push-acr
-        uses: azure/acr-build@v1
-        with:
-          service_principal: ${{ secrets.service_principal }}
-          service_principal_password: ${{ secrets.service_principal_password }}
-          tenant: ${{ secrets.tenant }}
-          registry: ${{ secrets.registry }}
-          repository: ${{ secrets.repository }}
-          image:  azure-vote-front
-          folder: azure-vote
-          branch: master
-          tag: ${{ github.sha }}
-      - name: Azure login
-        id: login
-        uses: azure/login@v1.4.3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Set AKS context
-        id: set-context
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: '${{ secrets.resource_group }}' 
-          cluster-name: '${{ secrets.cluster_name }}'
-      - name: Setup kubectl
-        id: install-kubectl
-        uses: azure/setup-kubectl@v3
-      - name: Deploy to AKS
-        id: deploy-aks
+      - name: Deploy to AKS (Prod)
+        id: deploy-aks-prod
+        if: env.ENVIRONMENT == 'Prod'
         uses: Azure/k8s-deploy@v4
         with:
           namespace: 'default'
@@ -96,5 +64,3 @@ jobs:
              azure-vote-all-in-one-redis.yaml
           images: '${{ secrets.registry }}.azurecr.io/${{ secrets.repository }}/azure-vote-front:${{ github.sha }}'
           pull-images: false
-
-
