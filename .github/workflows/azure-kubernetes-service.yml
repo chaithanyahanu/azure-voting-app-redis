@@ -25,6 +25,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: Dev
     steps:
       - name: Checkout source code 
         uses: actions/checkout@v3
