@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.inputs.environment != 'prod'
     steps:
       - name: Checkout source code 
         uses: actions/checkout@v3
@@ -53,8 +54,9 @@ jobs:
           pull-images: false
 
   prod_deploy:
-    if: github.event.inputs.environment == 'Prod'
     runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.environment == 'prod'
     steps:
       - name: Checkout source code 
         uses: actions/checkout@v3
@@ -94,4 +96,5 @@ jobs:
              azure-vote-all-in-one-redis.yaml
           images: '${{ secrets.registry }}.azurecr.io/${{ secrets.repository }}/azure-vote-front:${{ github.sha }}'
           pull-images: false
+
 
